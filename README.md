@@ -87,8 +87,6 @@ The application includes two narrated video presentations accessible directly vi
 1. **"Why use SEO4musicians?"** (`SEO4musicians-Why.mp4`): Explains entity ambiguity, Google Knowledge Graph disambiguation, venue timezone accuracy, and direct fan revenue.
 2. **"How to use SEO4musicians?"** (`SEO4musicians-How.mp4`): Step-by-step walkthrough from URL auto-discovery to 1-click CMS integration.
 
-All presentation transcripts, storyboards, and high-resolution slide assets are available in the [`notebooklm_getting_started/`](notebooklm_getting_started/) folder.
-
 ---
 
 ## 🛠️ CMS Integration & Deployment
