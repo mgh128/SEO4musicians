@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO4musicians - Free Schema.org Music & Band Linked Data Generator</title>
+  <meta name="description" content="Free self-service Schema.org JSON-LD linked data generator for musicians, bands, and record labels. Disambiguate your entity for Google Knowledge Graph & AI search engines.">
+  <meta name="theme-color" content="#090d16">
+  <link rel="canonical" href="https://mh1.eu/tools/SEO4musicians">
+  
+  <!-- PWA Web Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              amber: '#f59e0b',
+              amberGlow: '#fbbf24',
+              indigo: '#6366f1',
+              darkBg: '#090d16',
+              cardBg: '#0f172a',
+              inputBg: '#182234'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Vue.js v3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
+
+  <div id="app" class="flex-1 flex flex-col min-h-screen" v-cloak>
+    
+    <!-- Top Header Bar -->
+    <header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 shadow-lg shadow-amber-500/20">
+          <i class="fa-solid fa-music text-slate-950 text-lg"></i>
+          <span class="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+          </span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-amber-400 via-amber-200 to-indigo-300 bg-clip-text text-transparent">SEO4musicians</h1>
+            <span class="badge badge-amber text-[10px] uppercase font-mono tracking-wider">Free Tool</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Schema.org Music & Band Linked Data Generator (<span class="font-mono text-slate-500">mh1.eu/tools/SEO4musicians</span>)</p>
+        </div>
+      </div>
+
+      <!-- Header Action Shortcuts & Quality Badge -->
+      <div class="flex items-center flex-wrap gap-2">
+        
+        <!-- Offline Warning Badge -->
+        <span v-if="isOffline" class="badge badge-rose text-xs">
+          <i class="fa-solid fa-wifi-slash"></i> Offline Mode
+        </span>
+
+        <!-- SEO Quality Score Indicator -->
+        <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80" :title="'SEO & Grounding Score: ' + seoQualityReport.score + '%'">
+          <div class="relative w-6 h-6 flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path class="score-circle text-amber-400" :stroke-dasharray="seoQualityReport.score + ', 100'" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[9px] font-bold font-mono text-amber-300">{{ seoQualityReport.score }}</span>
+          </div>
+          <div class="text-left leading-tight hidden md:block">
+            <div class="text-[11px] font-bold text-slate-200">Schema Health</div>
+          </div>
+        </div>
+
+        <!-- About the Tool & Narrated Videos Button -->
+        <button @click="currentView = (currentView === 'about' ? 'tool' : 'about')" 
+                :class="['btn-secondary text-xs py-1.5 px-3', currentView === 'about' ? 'text-sky-200 border-sky-400 bg-sky-500/20 shadow-md' : 'text-sky-300 hover:text-sky-200 border border-sky-500/30 bg-sky-500/10']" 
+                title="About the tool & Narrated Video Presentations">
+          <i class="fa-solid fa-circle-info text-sky-400"></i>
+          <span>{{ currentView === 'about' ? 'Back to Tool' : 'About the tool' }}</span>
+        </button>
+
+        <!-- Getting Started Video & Guide Button -->
+        <button @click="activeModal = 'gettingStarted'" class="btn-secondary text-xs py-1.5 px-3 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 bg-emerald-500/10" title="Getting Started Video & Instructions">
+          <i class="fa-solid fa-circle-play text-emerald-400"></i>
+          <span>Getting Started</span>
+        </button>
+
+        <!-- Import JSON-LD Button -->
+        <button @click="activeModal = 'import'" class="btn-secondary text-xs py-1.5 px-3" title="Import existing JSON-LD markup or file">
+          <i class="fa-solid fa-file-import text-indigo-400"></i>
+          <span class="hidden sm:inline">Import</span>
+        </button>
+
+        <!-- Embed Guide Button -->
+        <button @click="activeModal = 'embed'" class="btn-secondary text-xs py-1.5 px-3" title="CMS Embed Instructions">
+          <i class="fa-solid fa-code text-sky-400"></i>
+          <span class="hidden sm:inline">Embed Guide</span>
+        </button>
+
+        <!-- Disclaimer / Notice Button -->
+        <button @click="activeModal = 'disclaimer'" class="btn-secondary text-xs py-1.5 px-3 text-slate-300 hover:text-amber-300" title="Terms & Non-Destructive Notice">
+          <i class="fa-solid fa-shield-halved text-amber-400"></i>
+          <span class="hidden md:inline">Notice & Disclaimer</span>
+        </button>
+
+        <!-- Demo Example Button -->
+        <button @click="loadDemoExample" class="btn-secondary text-xs py-1.5 px-3 text-amber-300 hover:text-amber-200 border border-amber-500/30 bg-amber-500/10" title="Load sample band dataset to see an example of populated fields">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+          <span>Demo Example</span>
+        </button>
+
+        <!-- Clear / Reset All Button -->
+        <button @click="activeModal = 'resetConfirm'" class="btn-secondary text-xs py-1.5 px-3 text-rose-300 hover:text-rose-200 border border-rose-500/30 bg-rose-500/10" title="Clear all form fields to a blank slate">
+          <i class="fa-solid fa-trash-can text-rose-400"></i>
+          <span>Clear / Reset All</span>
+        </button>
+
+        <!-- PWA Install Button -->
+        <button v-if="installPromptEvent" @click="triggerPwaInstall" class="btn-primary text-xs py-1.5 px-3">
+          <i class="fa-solid fa-download"></i>
+          <span>Install</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Prominent Disclaimer & Non-Destructive Notice Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border-b border-slate-800/90 px-4 lg:px-8 py-2 text-xs text-slate-300">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-amber-400"></i>
+          <span>
+            <strong>Free Self-Service Tool:</strong> Provided entirely <em>"as is"</em> with no warranty. 
+            This tool <strong>does not directly edit or alter anything on your website or online accounts</strong> — it only generates standard JSON-LD code for you to paste into your site.
+          </span>
+        </div>
+        <button @click="activeModal = 'disclaimer'" class="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 flex-shrink-0">
+          Read Full Terms & Guidance &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MAIN GENERATOR TOOL VIEW -->
+    <!-- ========================================================================= -->
+    <div v-if="currentView === 'tool'">
+
+      <!-- FOREMOST HERO URL DISCOVERY INPUT -->
+      <section class="max-w-7xl w-full mx-auto px-4 lg:px-6 pt-5 pb-2">
+      <div class="glass-panel p-5 sm:p-6 border-2 border-amber-500/30 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/80 shadow-2xl relative overflow-hidden">
+        
+        <div class="relative z-10">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-amber-400"></i>
+              Step 1: Enter Your Website URL to Auto-Populate Your Profile
+            </h2>
+            <span class="badge badge-emerald text-[11px]">Zero Dummy Data &bull; Auto-Scraped</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-300 mb-4 max-w-3xl">
+            Enter your official band or artist website URL. SEO4musicians will crawl your site to discover your social & streaming profiles, inspect your page structure, and cross-reference <strong>MusicBrainz.org</strong> to populate your real releases and metadata:
+          </p>
+
+          <!-- Input Bar -->
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <div class="relative flex-1 w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-globe"></i>
+              </div>
+              <input 
+                v-model="heroUrlInput" 
+                @keydown.enter.prevent="startAutoDiscovery"
+                type="url" 
+                class="form-input text-sm sm:text-base py-3 pl-10 pr-4 font-mono w-full !bg-slate-950/90 !border-slate-600 focus:!border-amber-400" 
+                placeholder="https://yourband.com or https://artistname.bandcamp.com">
+            </div>
+            
+            <button 
+              @click="startAutoDiscovery" 
+              :disabled="discovery.running || !heroUrlInput" 
+              class="btn-primary text-sm py-3 px-6 w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-2">
+              <i v-if="discovery.running" class="fa-solid fa-circle-notch fa-spin"></i>
+              <i v-else class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>{{ discovery.running ? 'Scanning & Building Profile...' : 'Scan Website & Auto-Populate' }}</span>
+            </button>
+          </div>
+
+          <!-- Quick Discovery Utility Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
+            <div class="flex items-center gap-2">
+              <span>Or manage manually:</span>
+              <button @click="loadDemoExample" class="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 flex items-center gap-1">
+                <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> Load Demo Band Example
+              </button>
+            </div>
+            <button @click="activeModal = 'resetConfirm'" class="text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-eraser text-[10px]"></i> Clear / Reset All Fields
+            </button>
+          </div>
+
+          <!-- Discovery Progress & Live Feed -->
+          <div v-if="discovery.running || discovery.logs.length > 0" class="mt-4 p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-robot text-amber-400"></i> {{ discovery.step }}
+              </span>
+              <span class="font-mono text-amber-400 font-bold">{{ discovery.progress }}%</span>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-gradient-to-r from-amber-500 to-indigo-500 h-1.5 transition-all duration-300" :style="{ width: discovery.progress + '%' }"></div>
+            </div>
+
+            <!-- Discovery Findings Summary Pills -->
+            <div v-if="discovery.found" class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
+              <span v-if="discovery.found.name" class="badge badge-amber">
+                <i class="fa-solid fa-user"></i> Artist: {{ discovery.found.name }}
+              </span>
+              <span v-if="discovery.found.linksCount" class="badge badge-indigo">
+                <i class="fa-solid fa-link"></i> {{ discovery.found.linksCount }} Platforms Detected
+              </span>
+              <span v-if="discovery.found.mbidMatched" class="badge badge-emerald">
+                <i class="fa-solid fa-brain"></i> MusicBrainz MBID Connected
+              </span>
+              <span v-if="discovery.found.releasesCount" class="badge badge-amber">
+                <i class="fa-solid fa-compact-disc"></i> {{ discovery.found.releasesCount }} Releases Imported
+              </span>
+              <span v-if="discovery.found.eventsCount" class="badge badge-emerald">
+                <i class="fa-solid fa-calendar-days"></i> {{ discovery.found.eventsCount }} Tour Dates with Local Timezones
+              </span>
+              <span v-if="discovery.found.location" class="badge badge-indigo">
+                <i class="fa-solid fa-location-dot"></i> {{ discovery.found.location }}
+              </span>
+            </div>
+
+            <!-- Activity Log Details -->
+            <div class="max-h-28 overflow-y-auto space-y-1 font-mono text-[11px] text-slate-400 pr-2">
+              <div v-for="(log, lIdx) in discovery.logs" :key="lIdx" class="flex items-start gap-2">
+                <span class="text-slate-600">[{{ log.time }}]</span>
+                <span :class="log.type === 'success' ? 'text-emerald-400' : (log.type === 'warning' ? 'text-amber-400' : 'text-slate-300')">
+                  {{ log.message }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Navigation Tabs -->
+    <div class="bg-slate-900/60 border-y border-slate-800/80 px-4 lg:px-8 py-2 overflow-x-auto">
+      <div class="max-w-7xl mx-auto flex items-center gap-1.5 min-w-max">
+        
+        <button @click="activeTab = 'profile'" :class="['tab-btn', activeTab === 'profile' ? 'active' : '']">
+          <i class="fa-solid fa-id-card"></i>
+          <span>1. Profile & Links</span>
+          <span v-if="computedSameAsList.length" class="badge badge-indigo text-[10px] ml-1">{{ computedSameAsList.length }} links</span>
+        </button>
+
+        <button @click="activeTab = 'discography'" :class="['tab-btn', activeTab === 'discography' ? 'active' : '']">
+          <i class="fa-solid fa-compact-disc"></i>
+          <span>2. Discography & Tracks</span>
+          <span v-if="artist.albums.length" class="badge badge-amber text-[10px] ml-1">{{ artist.albums.length }}</span>
+        </button>
+
+        <button @click="activeTab = 'events'" :class="['tab-btn', activeTab === 'events' ? 'active' : '']">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>3. Tour Dates & Gigs</span>
+          <span v-if="artist.events.length" class="badge badge-emerald text-[10px] ml-1">{{ artist.events.length }}</span>
+        </button>
+
+        <button @click="activeTab = 'reviews'" :class="['tab-btn', activeTab === 'reviews' ? 'active' : '']">
+          <i class="fa-solid fa-newspaper"></i>
+          <span>4. Press & Reviews</span>
+          <span v-if="artist.reviews.length" class="badge badge-indigo text-[10px] ml-1">{{ artist.reviews.length }}</span>
+        </button>
+
+        <button @click="activeTab = 'crawler'" :class="['tab-btn', activeTab === 'crawler' ? 'active' : '']">
+          <i class="fa-solid fa-robot text-amber-400"></i>
+          <span>5. MusicBrainz Search</span>
+        </button>
+
+        <button @click="activeTab = 'preview'" :class="['tab-btn', activeTab === 'preview' ? 'active' : '']">
+          <i class="fa-solid fa-code text-indigo-400"></i>
+          <span>6. Schema Code Studio</span>
+          <span class="badge badge-amber text-[10px] ml-1">Live</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Workspace Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 flex flex-col gap-6">
+
+      <!-- ========================================================================= -->
+      <!-- TAB 1: BAND / ARTIST CORE PROFILE -->
+      <!-- ========================================================================= -->
+      <section v-show="activeTab === 'profile'" class="space-y-6">
+        
+        <!-- Entity Identity Card -->
+        <div class="glass-panel p-6">
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-user-astronaut text-amber-400"></i>
+                Core Entity Identity (<span class="font-mono text-amber-300">schema:MusicGroup</span>)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Define canonical names, location, history, and official media for Knowledge Graph grounding.</p>
+            </div>
+            <span class="badge badge-amber hidden sm:inline-flex">Primary Entity</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- Band / Artist Name -->
+            <div>
+              <label class="form-label">
+                <span>Artist / Band Name <span class="text-rose-400">*</span></span>
+              </label>
+              <input v-model="artist.name" type="text" class="form-input" placeholder="e.g. Your Band Name">
+            </div>
+
+            <!-- Legal / Corporate Entity Name -->
+            <div>
+              <label class="form-label">
+                <span>Legal / Business Entity Name</span>
+                <span class="tooltip-trigger text-slate-400 hover:text-amber-400">
+                  <i class="fa-regular fa-circle-question"></i>
+                  <span class="tooltip-content">The registered company or trademark name for copyright and publishing disambiguation.</span>
+                </span>
+              </label>
+              <input v-model="artist.legalName" type="text" class="form-input" placeholder="e.g. Band Name Music LLC">
+            </div>
+
+            <!-- Official Homepage URL -->
+            <div>
+              <label class="form-label">
+                <span>Official Homepage URL <span class="text-rose-400">*</span></span>
+                <span class="tooltip-trigger text-slate-400 hover:text-amber-400">
+                  <i class="fa-regular fa-circle-question"></i>
+                  <span class="tooltip-content">Serves as the root URI identifier (e.g. https://band.com/#artist) in Schema.org.</span>
+                </span>
+              </label>
+              <input v-model="artist.url" type="url" class="form-input" placeholder="https://yourband.com">
+            </div>
+
+            <!-- Founding Date -->
+            <div>
+              <label class="form-label">
+                <span>Founding Date</span>
+              </label>
+              <input v-model="artist.foundingDate" type="date" class="form-input">
+            </div>
+
+            <!-- Dissolution Date -->
+            <div>
+              <label class="form-label">
+                <span>Dissolution Date (if inactive)</span>
+              </label>
+              <input v-model="artist.dissolutionDate" type="date" class="form-input">
+            </div>
+
+            <!-- Band Logo URL -->
+            <div>
+              <label class="form-label">
+                <span>Official Logo Image URL</span>
+              </label>
+              <input v-model="artist.logoUrl" type="url" class="form-input" placeholder="https://yourband.com/logo.png">
+            </div>
+
+          </div>
+
+          <!-- Alternate / Stage Names -->
+          <div class="mt-4 pt-4 border-t border-slate-800/80">
+            <label class="form-label">
+              <span>Alternate / Stage / Short Names</span>
+            </label>
+            <div class="flex flex-wrap items-center gap-2">
+              <span v-for="(alt, aIdx) in artist.alternateNames" :key="aIdx" class="badge badge-indigo text-xs">
+                {{ alt }}
+                <button @click="removeAlternateName(aIdx)" class="hover:text-rose-300 ml-1"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+              <input 
+                @keydown.enter.prevent="addAlternateName($event.target.value); $event.target.value = ''"
+                type="text" 
+                class="form-input !w-auto text-xs py-1.5 px-3" 
+                placeholder="+ Type & Press Enter">
+            </div>
+          </div>
+
+          <!-- Genres Multi-Tag Selector -->
+          <div class="mt-4 pt-4 border-t border-slate-800/80">
+            <label class="form-label">
+              <span>Musical Genres</span>
+              <span class="text-xs text-slate-400">Click suggestions or type custom genre</span>
+            </label>
+            
+            <div class="flex flex-wrap items-center gap-2 mb-2.5">
+              <span v-for="(genre, gIdx) in artist.genres" :key="gIdx" class="badge badge-amber text-xs">
+                {{ genre }}
+                <button @click="removeGenre(gIdx)" class="hover:text-rose-300 ml-1"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+              <div class="flex items-center gap-2">
+                <input 
+                  v-model="artist.genreInput"
+                  @keydown.enter.prevent="addGenre()"
+                  type="text" 
+                  class="form-input !w-44 text-xs py-1.5 px-3" 
+                  placeholder="Custom genre...">
+                <button @click="addGenre()" class="btn-secondary text-xs py-1.5 px-3">Add</button>
+              </div>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="flex flex-wrap gap-1.5 items-center">
+              <span class="text-[11px] text-slate-400 mr-1">Suggestions:</span>
+              <button 
+                v-for="sug in genreSuggestions" 
+                :key="sug" 
+                @click="addGenre(sug)" 
+                class="text-[11px] px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 hover:bg-slate-700 hover:text-amber-300 border border-slate-700/60 transition">
+                + {{ sug }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Founding Location (Place Schema) -->
+          <div class="mt-4 pt-4 border-t border-slate-800/80">
+            <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-location-dot text-rose-400"></i>
+              Founding Location (<span class="font-mono text-xs text-slate-400">schema:Place</span>)
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <label class="text-xs text-slate-400 mb-1 block">Studio / Origin Name</label>
+                <input v-model="artist.foundingLocation.name" type="text" class="form-input text-xs" placeholder="e.g. Studio A">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 mb-1 block">City / Locality</label>
+                <input v-model="artist.foundingLocation.city" type="text" class="form-input text-xs" placeholder="e.g. London, Austin">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 mb-1 block">State / Region / Province</label>
+                <input v-model="artist.foundingLocation.region" type="text" class="form-input text-xs" placeholder="e.g. TX, Greater London">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 mb-1 block">Country Code (ISO)</label>
+                <input v-model="artist.foundingLocation.country" type="text" class="form-input text-xs" placeholder="e.g. US, UK, CA, DE">
+              </div>
+            </div>
+          </div>
+
+          <!-- Artist Bio / Description -->
+          <div class="mt-4 pt-4 border-t border-slate-800/80">
+            <label class="form-label">
+              <span>Artist Biography / Semantic Description</span>
+              <span class="text-xs text-slate-400 font-mono">{{ artist.description.length }} chars</span>
+            </label>
+            <textarea v-model="artist.description" rows="3" class="form-textarea" placeholder="Detailed artist bio and musical style. Used directly by Perplexity, Gemini, and Google Search for entity synthesis..."></textarea>
+          </div>
+
+          <!-- Press / High-Res Image URLs -->
+          <div class="mt-4 pt-4 border-t border-slate-800/80">
+            <div class="flex items-center justify-between mb-2">
+              <label class="form-label !mb-0">
+                <span>High-Resolution Promotional Images (schema:image)</span>
+              </label>
+              <button @click="addImage" class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1">
+                <i class="fa-solid fa-plus"></i> Add Image URL
+              </button>
+            </div>
+            <div class="space-y-2">
+              <div v-for="(img, imgIdx) in artist.images" :key="imgIdx" class="flex items-center gap-2">
+                <input v-model="artist.images[imgIdx]" type="url" class="form-input text-xs" placeholder="https://yourband.com/press-photo.jpg">
+                <button v-if="img" @click="verifyUrl(img)" class="btn-secondary text-xs py-1.5 px-2.5" title="Preview image">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+                <button @click="removeImage(imgIdx)" class="btn-icon text-slate-400 hover:text-rose-400">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Band Members Lineup Repeater -->
+        <div class="glass-panel p-6">
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-users text-indigo-400"></i>
+                Band Lineup & Members (<span class="font-mono text-indigo-300">schema:member & schema:hasOccupation</span>)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Map individual musicians, roles, instruments, and individual Wikidata identifiers.</p>
+            </div>
+            <button @click="addMember" class="btn-primary text-xs py-1.5 px-3">
+              <i class="fa-solid fa-user-plus"></i> Add Musician
+            </button>
+          </div>
+
+          <div v-if="artist.members.length === 0" class="text-center py-6 text-slate-500 text-xs italic">
+            No band members added yet. Click "Add Musician" above if applicable.
+          </div>
+
+          <div v-else class="space-y-3">
+            <div v-for="(member, mIdx) in artist.members" :key="mIdx" class="glass-card p-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
+                
+                <div>
+                  <label class="text-[11px] font-semibold text-slate-400 block mb-1">Musician Name</label>
+                  <input v-model="member.name" type="text" class="form-input text-xs" placeholder="e.g. Musician Name">
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-semibold text-slate-400 block mb-1">Role / Occupation</label>
+                  <input v-model="member.role" type="text" class="form-input text-xs" placeholder="e.g. Lead Vocalist & Guitarist">
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-semibold text-slate-400 block mb-1">Instruments</label>
+                  <input v-model="member.instrument" type="text" class="form-input text-xs" placeholder="e.g. Vocals, Guitar">
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-semibold text-slate-400 block mb-1">Profile URL</label>
+                  <input v-model="member.url" type="url" class="form-input text-xs" placeholder="https://yourband.com/members/john">
+                </div>
+
+                <div class="flex items-center gap-2 pt-4 sm:pt-0">
+                  <div class="flex-1">
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1">Wikidata / MBID</label>
+                    <input v-model="member.wikidata" type="text" class="form-input text-xs" placeholder="Q123456 or MBID">
+                  </div>
+                  <button @click="removeMember(mIdx)" class="btn-icon text-slate-400 hover:text-rose-400 self-end mb-0.5" title="Remove Member">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Authority & Streaming Link Directory (sameAs) -->
+        <div class="glass-panel p-6">
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-link text-amber-400"></i>
+                Streaming & Authority Directory (<span class="font-mono text-amber-300">schema:sameAs</span>)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Crucial for Knowledge Graph disambiguation, AI citations, and streaming platform synchronization.</p>
+            </div>
+            <span class="badge badge-emerald">{{ computedSameAsList.length }} Linked Nodes</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- MusicBrainz MBID -->
+            <div class="glass-card p-3 border-l-4 border-l-amber-500">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-brain text-amber-400"></i> MusicBrainz Artist MBID
+                </span>
+                <span class="tooltip-trigger text-slate-400 hover:text-amber-400">
+                  <i class="fa-regular fa-circle-question"></i>
+                  <span class="tooltip-content">Authoritative semantic identifier (UUID) used by Google, Spotify, and Apple Music to merge artist data.</span>
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.musicBrainz" type="text" class="form-input text-xs" placeholder="UUID or https://musicbrainz.org/artist/...">
+                <button v-if="artist.sameAs.musicBrainz" @click="verifyUrl(artist.sameAs.musicBrainz)" class="btn-secondary text-xs py-1.5 px-2.5" title="Verify Link">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Wikidata URL / ID -->
+            <div class="glass-card p-3 border-l-4 border-l-indigo-500">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-globe text-indigo-400"></i> Wikidata Entity (QID / URL)
+                </span>
+                <span class="tooltip-trigger text-slate-400 hover:text-amber-400">
+                  <i class="fa-regular fa-circle-question"></i>
+                  <span class="tooltip-content">Direct connection to Wikimedia Knowledge Base. Directly feeds Google Knowledge Panels.</span>
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.wikidata" type="text" class="form-input text-xs" placeholder="Q123456 or https://wikidata.org/wiki/Q...">
+                <button v-if="artist.sameAs.wikidata" @click="verifyUrl(artist.sameAs.wikidata)" class="btn-secondary text-xs py-1.5 px-2.5" title="Verify Link">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Spotify -->
+            <div class="glass-card p-3 border-l-4 border-l-emerald-500">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-spotify text-emerald-400"></i> Spotify Artist URL
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.spotify" type="url" class="form-input text-xs" placeholder="https://open.spotify.com/artist/...">
+                <button v-if="artist.sameAs.spotify" @click="verifyUrl(artist.sameAs.spotify)" class="btn-secondary text-xs py-1.5 px-2.5" title="Verify Link">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Apple Music -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-apple text-slate-200"></i> Apple Music URL
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.appleMusic" type="url" class="form-input text-xs" placeholder="https://music.apple.com/.../artist/...">
+                <button v-if="artist.sameAs.appleMusic" @click="verifyUrl(artist.sameAs.appleMusic)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bandcamp -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-bandcamp text-sky-400"></i> Bandcamp Page URL
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.bandcamp" type="url" class="form-input text-xs" placeholder="https://yourband.bandcamp.com">
+                <button v-if="artist.sameAs.bandcamp" @click="verifyUrl(artist.sameAs.bandcamp)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- YouTube Music / Channel -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-youtube text-rose-500"></i> YouTube Official Channel
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.youtube" type="url" class="form-input text-xs" placeholder="https://youtube.com/@YourBand">
+                <button v-if="artist.sameAs.youtube" @click="verifyUrl(artist.sameAs.youtube)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- SoundCloud -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-soundcloud text-orange-400"></i> SoundCloud Profile
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.soundcloud" type="url" class="form-input text-xs" placeholder="https://soundcloud.com/...">
+                <button v-if="artist.sameAs.soundcloud" @click="verifyUrl(artist.sameAs.soundcloud)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Discogs -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-record-vinyl text-slate-300"></i> Discogs Artist Page
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.discogs" type="url" class="form-input text-xs" placeholder="https://discogs.com/artist/...">
+                <button v-if="artist.sameAs.discogs" @click="verifyUrl(artist.sameAs.discogs)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bandsintown -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-ticket text-teal-400"></i> Bandsintown Artist
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.bandsintown" type="url" class="form-input text-xs" placeholder="https://bandsintown.com/a/...">
+                <button v-if="artist.sameAs.bandsintown" @click="verifyUrl(artist.sameAs.bandsintown)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Songkick -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-guitar text-pink-400"></i> Songkick Artist
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.songkick" type="url" class="form-input text-xs" placeholder="https://songkick.com/artists/...">
+                <button v-if="artist.sameAs.songkick" @click="verifyUrl(artist.sameAs.songkick)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Genius Lyrics -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-quote-left text-yellow-300"></i> Genius Artist Page
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.genius" type="url" class="form-input text-xs" placeholder="https://genius.com/artists/...">
+                <button v-if="artist.sameAs.genius" @click="verifyUrl(artist.sameAs.genius)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Musixmatch -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-music text-orange-400"></i> Musixmatch Artist
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.musixmatch" type="url" class="form-input text-xs" placeholder="https://musixmatch.com/artist/...">
+                <button v-if="artist.sameAs.musixmatch" @click="verifyUrl(artist.sameAs.musixmatch)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Social Links: Instagram -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-instagram text-pink-500"></i> Instagram Profile
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.instagram" type="url" class="form-input text-xs" placeholder="https://instagram.com/...">
+                <button v-if="artist.sameAs.instagram" @click="verifyUrl(artist.sameAs.instagram)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Social Links: X / Twitter -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-x-twitter text-slate-200"></i> X / Twitter Profile
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.twitter" type="url" class="form-input text-xs" placeholder="https://x.com/...">
+                <button v-if="artist.sameAs.twitter" @click="verifyUrl(artist.sameAs.twitter)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Social Links: TikTok -->
+            <div class="glass-card p-3">
+              <label class="form-label">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-tiktok text-cyan-400"></i> TikTok Profile
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input v-model="artist.sameAs.tiktok" type="url" class="form-input text-xs" placeholder="https://tiktok.com/@...">
+                <button v-if="artist.sameAs.tiktok" @click="verifyUrl(artist.sameAs.tiktok)" class="btn-secondary text-xs py-1.5 px-2.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: DISCOGRAPHY & RELEASES (MusicAlbum & MusicRecording) -->
+      <!-- ========================================================================= -->
+      <section v-show="activeTab === 'discography'" class="space-y-6">
+        
+        <div class="glass-panel p-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-5 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-compact-disc text-amber-400"></i>
+                Discography & Releases (<span class="font-mono text-amber-300">schema:MusicAlbum</span> & <span class="font-mono text-indigo-300">schema:MusicRecording</span>)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Manage albums, EPs, singles, catalog metadata, ISRCs, and tracklist ISO durations.</p>
+            </div>
+            <button @click="addAlbum" class="btn-primary text-xs py-1.5 px-3">
+              <i class="fa-solid fa-plus"></i> Add New Album / Release
+            </button>
+          </div>
+
+          <!-- Bandcamp Discography & Tracklist Importer Tool Card -->
+          <div class="glass-card p-4 sm:p-5 border-2 border-sky-500/30 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 rounded-xl space-y-3 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <i class="fa-brands fa-bandcamp text-sky-400 text-base"></i>
+                <h3 class="text-xs sm:text-sm font-bold text-slate-100 uppercase tracking-wide">
+                  Import Discography, Artwork & Tracklists from Bandcamp
+                </h3>
+              </div>
+              <span class="badge badge-sky text-[10px]"><i class="fa-solid fa-heart text-rose-400"></i> Direct Artist Support / Bandcamp Friday</span>
+            </div>
+
+            <p class="text-xs text-slate-300">
+              Enter your Bandcamp artist URL (e.g. <code class="font-mono text-sky-300">https://yourband.bandcamp.com</code>). The tool crawls your releases, high-res cover art, tracklists with exact ISO durations, and embeds <strong>direct Bandcamp purchase <code class="font-mono text-amber-300">schema:Offer</code> links</strong> into your structured data to maximize direct fan purchases:
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-2.5">
+              <input 
+                v-model="bandcampImporter.url" 
+                @keydown.enter.prevent="fetchBandcampDiscography()"
+                type="url" 
+                class="form-input text-xs flex-1 !bg-slate-950" 
+                :placeholder="'e.g. ' + (artist.sameAs.bandcamp || 'https://yourband.bandcamp.com')">
+              <button 
+                @click="fetchBandcampDiscography()" 
+                :disabled="bandcampImporter.loading" 
+                class="btn-primary text-xs py-2 px-4 w-full sm:w-auto flex items-center justify-center gap-2 !bg-sky-600 hover:!bg-sky-500">
+                <i v-if="bandcampImporter.loading" class="fa-solid fa-circle-notch fa-spin"></i>
+                <i v-else class="fa-brands fa-bandcamp"></i>
+                <span>{{ bandcampImporter.loading ? 'Importing from Bandcamp...' : 'Fetch Bandcamp Discography' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="artist.albums.length === 0" class="text-center py-8 text-slate-500 text-xs italic">
+            No albums or releases added yet. Use the Bandcamp Importer above or click "Add New Album".
+          </div>
+
+          <!-- Album Repeater -->
+          <div v-else class="space-y-6">
+            <div v-for="(album, aIdx) in artist.albums" :key="aIdx" class="glass-card p-5 border border-slate-700/60 rounded-xl relative">
+              
+              <!-- Album Header Bar -->
+              <div class="flex flex-wrap items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                  <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-bold text-sm">
+                    #{{ aIdx + 1 }}
+                  </span>
+                  <div>
+                    <h3 class="font-bold text-slate-200 text-base flex items-center gap-2">
+                      {{ album.title || 'Untitled Release' }}
+                      <span class="badge badge-amber text-[10px]">{{ album.releaseType }}</span>
+                    </h3>
+                    <div class="text-xs text-slate-400 font-mono">
+                      {{ album.tracks ? album.tracks.length : 0 }} Tracks | {{ album.releaseDate || 'No Date' }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button @click="openBulkTrackModal(aIdx)" class="btn-secondary text-xs py-1.5 px-3" title="Paste tracklist with durations to auto-import">
+                    <i class="fa-solid fa-list-ol text-amber-400"></i> Bulk Track Importer
+                  </button>
+                  <button @click="removeAlbum(aIdx)" class="btn-icon text-slate-400 hover:text-rose-400" title="Delete Album">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Album Metadata Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                
+                <div>
+                  <label class="form-label text-xs">Release Title <span class="text-rose-400">*</span></label>
+                  <input v-model="album.title" type="text" class="form-input text-xs" placeholder="e.g. Album Title">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Release Type</label>
+                  <select v-model="album.releaseType" class="form-select text-xs">
+                    <option value="AlbumRelease">AlbumRelease (Full LP)</option>
+                    <option value="EPRelease">EPRelease (EP)</option>
+                    <option value="SingleRelease">SingleRelease (Single)</option>
+                    <option value="BroadcastRelease">BroadcastRelease (Live)</option>
+                    <option value="CompilationAlbumRelease">CompilationAlbumRelease</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Release Date</label>
+                  <input v-model="album.releaseDate" type="date" class="form-input text-xs">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Record Label</label>
+                  <input v-model="album.label" type="text" class="form-input text-xs" placeholder="e.g. Record Label / Independent">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Catalog Number</label>
+                  <input v-model="album.catalogNumber" type="text" class="form-input text-xs" placeholder="e.g. CAT-001">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Barcode / UPC / EAN</label>
+                  <input v-model="album.barcode" type="text" class="form-input text-xs" placeholder="e.g. 019582910482">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Dedicated Album URL</label>
+                  <input v-model="album.url" type="url" class="form-input text-xs" placeholder="https://yourband.com/music/album-name">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Cover Artwork URL</label>
+                  <input v-model="album.image" type="url" class="form-input text-xs" placeholder="https://yourband.com/artwork.jpg">
+                </div>
+
+              </div>
+
+              <!-- Album Specific Streaming Links -->
+              <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800/80 mb-4">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Album-Specific Streaming URLs</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                  <input v-model="album.streamingLinks.spotify" type="url" class="form-input text-xs" placeholder="Spotify Album URL">
+                  <input v-model="album.streamingLinks.bandcamp" type="url" class="form-input text-xs" placeholder="Bandcamp Album URL">
+                  <input v-model="album.streamingLinks.appleMusic" type="url" class="form-input text-xs" placeholder="Apple Music Album URL">
+                  <input v-model="album.streamingLinks.youtubeMusic" type="url" class="form-input text-xs" placeholder="YouTube Music Playlist">
+                </div>
+              </div>
+
+              <!-- Tracklist Sub-Repeater -->
+              <div class="pt-3 border-t border-slate-800">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list text-amber-400"></i>
+                    Tracklist Sub-Schema (<span class="font-mono text-amber-300">schema:track</span>)
+                  </h4>
+                  <button @click="addTrack(aIdx)" class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-plus"></i> Add Track
+                  </button>
+                </div>
+
+                <div class="space-y-2">
+                  <div v-for="(trk, tIdx) in album.tracks" :key="tIdx" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/70">
+                    
+                    <!-- Track Position -->
+                    <div class="sm:col-span-1 flex items-center justify-center font-mono font-bold text-xs text-slate-400">
+                      {{ trk.position || tIdx + 1 }}.
+                    </div>
+
+                    <!-- Track Title -->
+                    <div class="sm:col-span-3">
+                      <input v-model="trk.title" type="text" class="form-input text-xs" placeholder="Track Title">
+                    </div>
+
+                    <!-- Track Duration (MM:SS with automatic ISO calculation) -->
+                    <div class="sm:col-span-2">
+                      <div class="relative">
+                        <input v-model="trk.duration" type="text" class="form-input text-xs font-mono" placeholder="MM:SS (03:45)" title="Input MM:SS or seconds">
+                        <span class="absolute right-2 top-2 text-[10px] text-slate-500 font-mono" :title="'ISO 8601: ' + formatDurationToISO(trk.duration)">
+                          {{ formatDurationToISO(trk.duration) || 'PT0M0S' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- ISRC Code -->
+                    <div class="sm:col-span-2">
+                      <input v-model="trk.isrc" type="text" class="form-input text-xs font-mono" placeholder="ISRC (US-XXX-24-00101)">
+                    </div>
+
+                    <!-- Composer / Credits -->
+                    <div class="sm:col-span-2">
+                      <input v-model="trk.composer" type="text" class="form-input text-xs" placeholder="Composer Credits">
+                    </div>
+
+                    <!-- Lyrics / Audio preview URLs & Action -->
+                    <div class="sm:col-span-2 flex items-center gap-1">
+                      <input v-model="trk.lyricsUrl" type="url" class="form-input text-xs flex-1" placeholder="Genius Lyrics URL">
+                      <button @click="removeTrack(aIdx, tIdx)" class="btn-icon text-slate-500 hover:text-rose-400 flex-shrink-0" title="Delete Track">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 3: LIVE EVENTS & TOUR DATES (MusicEvent) -->
+      <!-- ========================================================================= -->
+      <section v-show="activeTab === 'events'" class="space-y-6">
+        
+        <div class="glass-panel p-6 space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days text-emerald-400"></i>
+                Live Tour Dates & Gigs (<span class="font-mono text-emerald-300">schema:MusicEvent</span> & <span class="font-mono text-amber-300">schema:Offer</span>)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Empowers Google Search Event Carousels, Rich Tickets, and localized venue timezones for AI search.</p>
+            </div>
+
+            <!-- Tour Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button @click="refreshLiveTourSchedule" :disabled="tourImporter.loading" class="btn-secondary text-xs py-1.5 px-3 border-emerald-500/30 text-emerald-300 hover:text-emerald-200 bg-emerald-500/10" title="Re-fetch upcoming tour schedule from Bandsintown/Songkick/site and remove past gigs">
+                <i v-if="tourImporter.loading" class="fa-solid fa-circle-notch fa-spin"></i>
+                <i v-else class="fa-solid fa-rotate text-emerald-400"></i>
+                <span>Refresh Live Schedule</span>
+              </button>
+
+              <button v-if="artist.events.length > 0" @click="removePastEvents" class="btn-secondary text-xs py-1.5 px-2.5 text-slate-300 hover:text-amber-300" title="Remove events that are earlier than today">
+                <i class="fa-solid fa-broom text-amber-400"></i>
+                <span>Remove Past Gigs</span>
+              </button>
+
+              <button @click="addEvent" class="btn-primary text-xs py-1.5 px-3">
+                <i class="fa-solid fa-plus"></i> Add Tour Date
+              </button>
+            </div>
+          </div>
+
+          <!-- Automated Tour Dates Extractor Tool Card -->
+          <div class="glass-card p-4 sm:p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 rounded-xl space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-400"></i>
+                <h3 class="text-xs sm:text-sm font-bold text-slate-100 uppercase tracking-wide">
+                  Auto-Extract Gigs from Bandsintown, Songkick, or /tour Webpage
+                </h3>
+              </div>
+              <span class="badge badge-indigo text-[10px]">Timezone-Localized</span>
+            </div>
+
+            <p class="text-xs text-slate-300">
+              Enter your band name, your <code class="font-mono text-emerald-300">bandsintown.com/a/...</code> URL, Songkick profile, or dedicated tour page (e.g. <code class="font-mono text-emerald-300">https://yourband.com/tour</code>). The extractor automatically resolves the local timezone for each concert venue to generate valid Google Event timestamps:
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-2.5">
+              <input 
+                v-model="tourImporter.query" 
+                @keydown.enter.prevent="fetchTourDates"
+                type="text" 
+                class="form-input text-xs flex-1 !bg-slate-950" 
+                :placeholder="'Enter band name or tour URL (e.g. ' + (artist.name || 'Your Band') + ' or bandsintown.com/a/123...)'">
+              <button 
+                @click="fetchTourDates" 
+                :disabled="tourImporter.loading" 
+                class="btn-primary text-xs py-2 px-4 w-full sm:w-auto flex items-center justify-center gap-2">
+                <i v-if="tourImporter.loading" class="fa-solid fa-circle-notch fa-spin"></i>
+                <i v-else class="fa-solid fa-spider"></i>
+                <span>{{ tourImporter.loading ? 'Scanning & Localizing Timezones...' : 'Fetch Tour Dates' }}</span>
+              </button>
+            </div>
+
+            <!-- Extracted Gigs Preview & Staging Table -->
+            <div v-if="tourImporter.extractedEvents.length > 0" class="mt-3 pt-3 border-t border-slate-800 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xs font-bold text-emerald-400">
+                  <i class="fa-solid fa-circle-check"></i> Discovered {{ tourImporter.extractedEvents.length }} upcoming gig(s)
+                </span>
+                <div class="flex items-center gap-2">
+                  <button @click="applyExtractedTourDates('append')" class="btn-secondary text-xs py-1 px-3">
+                    + Append to List
+                  </button>
+                  <button @click="applyExtractedTourDates('replace')" class="btn-primary text-xs py-1 px-3">
+                    Replace Tour List ({{ tourImporter.extractedEvents.length }})
+                  </button>
+                </div>
+              </div>
+
+              <div class="max-h-56 overflow-y-auto space-y-1.5 pr-1 font-mono text-[11px]">
+                <div v-for="(ex, exIdx) in tourImporter.extractedEvents" :key="exIdx" class="p-2 rounded bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                  <div class="truncate">
+                    <span class="font-bold text-slate-200">{{ ex.name }}</span>
+                    <span class="text-slate-400 ml-2">({{ ex.city }}, {{ ex.country }})</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-emerald text-[9px]">{{ ex.startDate }}</span>
+                    <span class="badge badge-indigo text-[9px]">{{ ex.timezone }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="artist.events.length === 0" class="text-center py-8 text-slate-500 text-xs italic">
+            No live tour dates added yet. Use the Tour Extractor above or click "Add Tour Date / Concert".
+          </div>
+
+          <!-- Events Repeater -->
+          <div v-else class="space-y-4">
+            <div v-for="(event, eIdx) in artist.events" :key="eIdx" class="glass-card p-5 border border-slate-700/60 rounded-xl">
+              
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                <span class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-ticket text-amber-400"></i> Event #{{ eIdx + 1 }}: {{ event.name || 'Untitled Gig' }}
+                </span>
+                <button @click="removeEvent(eIdx)" class="btn-icon text-slate-400 hover:text-rose-400" title="Delete Event">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-3">
+                
+                <div class="lg:col-span-2">
+                  <label class="form-label text-xs">Event / Show Title <span class="text-rose-400">*</span></label>
+                  <input v-model="event.name" type="text" class="form-input text-xs" placeholder="e.g. Band Name at The Showbox">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Venue Name</label>
+                  <input v-model="event.venueName" @change="syncEventDateTime(eIdx)" type="text" class="form-input text-xs" placeholder="e.g. The Showbox">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Venue Street Address</label>
+                  <input v-model="event.streetAddress" type="text" class="form-input text-xs" placeholder="e.g. 1426 1st Ave">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">City</label>
+                  <input v-model="event.city" @change="syncEventDateTime(eIdx)" type="text" class="form-input text-xs" placeholder="e.g. Seattle, London, Berlin">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Region / State</label>
+                  <input v-model="event.region" @change="syncEventDateTime(eIdx)" type="text" class="form-input text-xs" placeholder="e.g. WA, NY, CA, TX">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Postal Code</label>
+                  <input v-model="event.postalCode" type="text" class="form-input text-xs" placeholder="e.g. 98101, SW9 9SL">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Country Code</label>
+                  <input v-model="event.country" @change="syncEventDateTime(eIdx)" type="text" class="form-input text-xs" placeholder="e.g. US, GB, DE, FR">
+                </div>
+
+                <!-- Venue Timezone Selector -->
+                <div class="sm:col-span-2">
+                  <label class="form-label text-xs">
+                    <span class="flex items-center gap-1.5">
+                      <i class="fa-solid fa-clock text-amber-400"></i> Venue Local Timezone <span class="text-rose-400">*</span>
+                    </span>
+                    <button @click="syncEventDateTime(eIdx)" class="text-[10px] text-amber-400 hover:underline">Auto-Detect</button>
+                  </label>
+                  <select v-model="event.timezone" @change="syncEventDateTime(eIdx)" class="form-select text-xs">
+                    <option v-for="tz in commonTimezones" :key="tz.value" :value="tz.value">
+                      {{ tz.label }} ({{ tz.value }})
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Start Date & Time (ISO with offset) <span class="text-rose-400">*</span></label>
+                  <input v-model="event.startDate" @change="syncEventDateTime(eIdx)" type="text" class="form-input text-xs font-mono" placeholder="2026-10-18T20:00:00-07:00">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">End Date & Time (ISO with offset)</label>
+                  <input v-model="event.endDate" type="text" class="form-input text-xs font-mono" placeholder="2026-10-18T23:30:00-07:00">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Event Status</label>
+                  <select v-model="event.status" class="form-select text-xs">
+                    <option value="EventScheduled">EventScheduled (Active)</option>
+                    <option value="EventCancelled">EventCancelled (Cancelled)</option>
+                    <option value="EventPostponed">EventPostponed (Postponed)</option>
+                    <option value="EventRescheduled">EventRescheduled</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Attendance Mode</label>
+                  <select v-model="event.attendanceMode" class="form-select text-xs">
+                    <option value="OfflineEventAttendanceMode">Offline (In-Person Concert)</option>
+                    <option value="OnlineEventAttendanceMode">Online (Live Stream / Virtual)</option>
+                    <option value="MixedEventAttendanceMode">Mixed (Hybrid Live + Stream)</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <!-- Ticketing Offers Sub-Section -->
+              <div class="p-3 bg-slate-900/70 rounded-lg border border-slate-800">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cart-shopping text-emerald-400"></i> Direct Ticket Purchase Link & Pricing (<span class="font-mono text-amber-300">schema:Offer</span>)
+                  </div>
+                  <span v-if="event.ticketUrl" class="badge badge-indigo text-[10px]">
+                    <i class="fa-solid fa-building"></i> Provider: {{ detectTicketSellerName(event.ticketUrl) }}
+                  </span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                  <div class="sm:col-span-2">
+                    <input v-model="event.ticketUrl" type="url" class="form-input text-xs" placeholder="Ticket Purchase URL (AXS, Ticketmaster, Dice, Eventbrite, Seetickets, Venue Box Office)">
+                  </div>
+                  <div>
+                    <input v-model="event.price" type="number" step="0.01" class="form-input text-xs" placeholder="Ticket Price (e.g. 25.00)">
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <select v-model="event.currency" class="form-select text-xs !w-24">
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="CAD">CAD ($)</option>
+                      <option value="AUD">AUD ($)</option>
+                    </select>
+                    <select v-model="event.availability" class="form-select text-xs flex-1">
+                      <option value="InStock">InStock</option>
+                      <option value="SoldOut">SoldOut</option>
+                      <option value="PreOrder">PreOrder</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 4: PRESS, ACCOLADES & EDITORIAL REVIEWS (Review & subjectOf) -->
+      <!-- ========================================================================= -->
+      <section v-show="activeTab === 'reviews'" class="space-y-6">
+        
+        <div class="glass-panel p-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-5 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-newspaper text-indigo-400"></i>
+                Press, Accolades & Editorial Grounding (<span class="font-mono text-indigo-300">schema:subjectOf</span> & <span class="font-mono text-amber-300">schema:Review</span>)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Embed critical quotes and verified reviews to supercharge E-E-A-T and Generative Engine Optimization (GEO).</p>
+            </div>
+            <button @click="addReview" class="btn-primary text-xs py-1.5 px-3">
+              <i class="fa-solid fa-plus"></i> Add Critical Review
+            </button>
+          </div>
+
+          <div v-if="artist.reviews.length === 0" class="text-center py-8 text-slate-500 text-xs italic">
+            No press reviews added yet. Click "Add Critical Review" above to cite press features or magazine writeups.
+          </div>
+
+          <div v-else class="space-y-4">
+            <div v-for="(rev, rIdx) in artist.reviews" :key="rIdx" class="glass-card p-5 border border-slate-700/60 rounded-xl">
+              
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                <span class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-quote-left text-amber-400"></i> Review #{{ rIdx + 1 }}: {{ rev.source || 'Publication' }}
+                </span>
+                <button @click="removeReview(rIdx)" class="btn-icon text-slate-400 hover:text-rose-400" title="Delete Review">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                
+                <div>
+                  <label class="form-label text-xs">Publication / Media Outlet <span class="text-rose-400">*</span></label>
+                  <input v-model="rev.source" type="text" class="form-input text-xs" placeholder="e.g. Pitchfork, NME, Rolling Stone">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Author / Critic Name</label>
+                  <input v-model="rev.author" type="text" class="form-input text-xs" placeholder="e.g. Critic Name">
+                </div>
+
+                <div>
+                  <label class="form-label text-xs">Original Review URL</label>
+                  <input v-model="rev.url" type="url" class="form-input text-xs" placeholder="https://publication.com/reviews/...">
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <div class="flex-1">
+                    <label class="form-label text-xs">Rating Value</label>
+                    <input v-model="rev.rating" type="number" step="0.1" class="form-input text-xs" placeholder="8.5">
+                  </div>
+                  <div class="flex-1">
+                    <label class="form-label text-xs">Best Rating Scale</label>
+                    <input v-model="rev.bestRating" type="number" class="form-input text-xs" placeholder="10 or 5">
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="space-y-2">
+                <div>
+                  <label class="form-label text-xs">Review Headline / Tagline</label>
+                  <input v-model="rev.headline" type="text" class="form-input text-xs" placeholder="e.g. A breathtaking sonic journey...">
+                </div>
+                <div>
+                  <label class="form-label text-xs">Review Snippet / Pull Quote (reviewBody)</label>
+                  <textarea v-model="rev.snippet" rows="2" class="form-textarea text-xs" placeholder="Exact quote from the critic or journalist..."></textarea>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 5: MANUAL MUSICBRAINZ RESOLVER & DISCOVERY -->
+      <!-- ========================================================================= -->
+      <section v-show="activeTab === 'crawler'" class="space-y-6">
+        
+        <!-- MusicBrainz Search Assistant Box -->
+        <div class="glass-panel p-6">
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-brain text-indigo-400"></i>
+                MusicBrainz Open API Search & MBID Resolver
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Query the global MusicBrainz open data repository to retrieve official MBIDs and import releases.</p>
+            </div>
+            <span class="badge badge-amber">Open Knowledge Graph</span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 mb-4">
+            <input 
+              v-model="crawler.mbQuery" 
+              @keydown.enter.prevent="searchMusicBrainz"
+              type="text" 
+              class="form-input text-sm flex-1" 
+              :placeholder="'Search MusicBrainz (e.g. ' + (artist.name || 'Your Band Name') + ')'">
+            <button 
+              @click="searchMusicBrainz" 
+              :disabled="crawler.mbLoading" 
+              class="btn-primary text-xs py-2.5 px-5 w-full sm:w-auto">
+              <i v-if="crawler.mbLoading" class="fa-solid fa-circle-notch fa-spin"></i>
+              <i v-else class="fa-solid fa-search"></i>
+              <span>{{ crawler.mbLoading ? 'Querying MusicBrainz...' : 'Search Artist' }}</span>
+            </button>
+          </div>
+
+          <!-- MusicBrainz Results -->
+          <div v-if="crawler.mbResults.length > 0" class="space-y-3 mt-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Matching MusicBrainz Artists</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div v-for="mbArt in crawler.mbResults" :key="mbArt.id" class="glass-card p-4 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <h4 class="font-bold text-slate-200 text-sm">{{ mbArt.name }}</h4>
+                    <span class="badge badge-indigo text-[10px]">{{ mbArt.country }}</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mb-2 italic">{{ mbArt.disambiguation }}</p>
+                  <div class="text-[11px] font-mono text-slate-500 truncate mb-3">MBID: {{ mbArt.id }}</div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                  <button @click="verifyUrl('https://musicbrainz.org/artist/' + mbArt.id)" class="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1">
+                    <i class="fa-solid fa-external-link"></i> View on MB
+                  </button>
+                  <button @click="selectMusicBrainzArtist(mbArt)" class="btn-primary text-xs py-1 px-3">
+                    <i class="fa-solid fa-check"></i> Attach & Fetch Releases
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 6: SCHEMA STUDIO & CODE OUTPUT -->
+      <!-- ========================================================================= -->
+      <section v-show="activeTab === 'preview'" class="space-y-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Code Output Studio (2 Columns) -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="glass-panel p-5">
+              
+              <!-- Schema Studio Controls Header -->
+              <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+                <div>
+                  <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-code text-amber-400"></i> JSON-LD Code Studio
+                  </h2>
+                  <p class="text-xs text-slate-400">Generated Schema.org Linked Data payload</p>
+                </div>
+
+                <!-- Export Mode Switcher -->
+                <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                  <button 
+                    @click="exportMode = 'consolidated'" 
+                    :class="['text-xs font-semibold px-3 py-1 rounded transition', exportMode === 'consolidated' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-slate-200']">
+                    Consolidated (All-in-One)
+                  </button>
+                  <button 
+                    @click="exportMode = 'multi-page'" 
+                    :class="['text-xs font-semibold px-3 py-1 rounded transition', exportMode === 'multi-page' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-slate-200']">
+                    Multi-Page Split
+                  </button>
+                </div>
+              </div>
+
+              <!-- Multi-Page Sub-Tab Selectors (if multi-page mode) -->
+              <div v-if="exportMode === 'multi-page'" class="flex flex-wrap items-center gap-2 mb-4 p-2 rounded-lg bg-slate-900/90 border border-slate-800">
+                <span class="text-xs text-slate-400 font-semibold mr-1">Target Page:</span>
+                <button 
+                  @click="multiPageSubTab = 'home'" 
+                  :class="['text-xs px-2.5 py-1 rounded', multiPageSubTab === 'home' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700']">
+                  Home / Bio Page
+                </button>
+                <button 
+                  @click="multiPageSubTab = 'discography'" 
+                  :class="['text-xs px-2.5 py-1 rounded', multiPageSubTab === 'discography' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700']">
+                  /music Discography Page
+                </button>
+                <button 
+                  @click="multiPageSubTab = 'album'" 
+                  :class="['text-xs px-2.5 py-1 rounded', multiPageSubTab === 'album' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700']">
+                  Individual Album Page
+                </button>
+                <button 
+                  @click="multiPageSubTab = 'events'" 
+                  :class="['text-xs px-2.5 py-1 rounded', multiPageSubTab === 'events' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700']">
+                  /tour Events Page
+                </button>
+
+                <!-- Album Selector if album sub-tab -->
+                <div v-if="multiPageSubTab === 'album'" class="ml-auto flex items-center gap-1.5">
+                  <span class="text-[11px] text-slate-400">Select Release:</span>
+                  <select v-model="selectedAlbumIndex" class="form-select text-xs !py-1 !px-2 !w-auto">
+                    <option v-for="(alb, idx) in artist.albums" :key="idx" :value="idx">
+                      {{ alb.title || 'Album #' + (idx + 1) }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Code Options & Quick Action Buttons -->
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" v-model="includeScriptTag" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-amber-400">
+                  <span>Include &lt;script type="application/ld+json"&gt; wrapper</span>
+                </label>
+
+                <div class="flex items-center gap-2">
+                  <button @click="copyToClipboard" class="btn-primary text-xs py-1.5 px-3">
+                    <i class="fa-solid fa-copy"></i> Copy Markup
+                  </button>
+                  <button @click="downloadSchema('jsonld')" class="btn-secondary text-xs py-1.5 px-3">
+                    <i class="fa-solid fa-download"></i> .jsonld
+                  </button>
+                  <button @click="downloadSchema('json')" class="btn-secondary text-xs py-1.5 px-3">
+                    <i class="fa-solid fa-download"></i> .json
+                  </button>
+                </div>
+              </div>
+
+              <!-- Formatted Syntax-Colored Output -->
+              <div class="code-container p-4 max-h-[600px] overflow-y-auto">
+                <pre class="code-output"><code v-html="activeSchemaHighlightedHtml"></code></pre>
+              </div>
+
+              <!-- Validator Action Launchers -->
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-800">
+                <span class="text-xs text-slate-400">External Schema Compliance Validation:</span>
+                <div class="flex items-center gap-2">
+                  <button @click="openGoogleRichResultsTest" class="btn-secondary text-xs py-1.5 px-3 hover:text-amber-300">
+                    <i class="fa-brands fa-google text-amber-400"></i> Google Rich Results Test
+                  </button>
+                  <button @click="openSchemaOrgValidator" class="btn-secondary text-xs py-1.5 px-3 hover:text-indigo-300">
+                    <i class="fa-solid fa-check-double text-indigo-400"></i> Schema.org Validator
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SEO Health & Knowledge Graph Auditor (1 Column) -->
+          <div class="space-y-4">
+            <div class="glass-panel p-5">
+              <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 pb-3 mb-4 border-b border-slate-800">
+                <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                SEO & Knowledge Graph Auditor
+              </h3>
+
+              <!-- Overall Score -->
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-900/90 border border-slate-800 mb-4">
+                <div class="relative w-16 h-16 flex items-center justify-center">
+                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="score-circle text-amber-400" :stroke-dasharray="seoQualityReport.score + ', 100'" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="absolute text-base font-extrabold font-mono text-amber-300">{{ seoQualityReport.score }}%</span>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-slate-100">
+                    {{ seoQualityReport.score >= 85 ? 'Knowledge Graph Ready' : (seoQualityReport.score >= 60 ? 'Good Authority' : 'Basic Entity') }}
+                  </div>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    {{ seoQualityReport.passed.length }} passed checks, {{ seoQualityReport.issues.length }} recommendations
+                  </p>
+                </div>
+              </div>
+
+              <!-- Passed Checks -->
+              <div class="space-y-2 mb-4">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Passed Optimizations</div>
+                <div v-for="(p, pIdx) in seoQualityReport.passed" :key="pIdx" class="p-2 rounded bg-slate-900/60 border border-emerald-500/20 text-xs">
+                  <div class="font-bold text-slate-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i> {{ p.title }}
+                  </div>
+                  <div class="text-[11px] text-slate-400 mt-0.5 pl-4">{{ p.desc }}</div>
+                </div>
+              </div>
+
+              <!-- Optimization Recommendations -->
+              <div v-if="seoQualityReport.issues.length > 0" class="space-y-2">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Recommended Enhancements</div>
+                <div v-for="(iss, iIdx) in seoQualityReport.issues" :key="iIdx" class="p-2 rounded bg-slate-900/60 border border-amber-500/20 text-xs">
+                  <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 text-[11px]"></i> {{ iss.title }}
+                  </div>
+                  <div class="text-[11px] text-slate-400 mt-0.5 pl-4">{{ iss.desc }}</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- ABOUT THE TOOL & NARRATED VIDEO GUIDES PAGE VIEW -->
+    <!-- ========================================================================= -->
+    <main v-else-if="currentView === 'about'" class="max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-8 animate-fade-in">
+      
+      <!-- Top Navigation & Return Bar -->
+      <div class="glass-panel p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 border border-sky-500/30">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-circle-info"></i>
+          </span>
+          <div>
+            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+              About SEO4musicians
+              <span class="badge badge-sky text-[10px]">Free Self-Service Tool</span>
+            </h2>
+            <p class="text-xs text-slate-400">Schema.org Linked Data, Knowledge Graph Disambiguation & Video Walkthroughs</p>
+          </div>
+        </div>
+
+        <button @click="closeAboutView" class="btn-primary text-xs py-2 px-4 flex items-center gap-2 !bg-amber-600 hover:!bg-amber-500 shadow-lg">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Back to the SEO4musicians tool</span>
+        </button>
+      </div>
+
+      <!-- Hero Introduction Banner -->
+      <div class="glass-panel p-6 sm:p-8 border-2 border-sky-500/30 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 rounded-2xl relative overflow-hidden">
+        <div class="max-w-3xl space-y-3 relative z-10">
+          <span class="badge badge-amber text-xs font-mono uppercase tracking-wider">Video Walkthroughs</span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight leading-tight">
+            Take Control of Your Music's <span class="bg-gradient-to-r from-amber-400 via-amber-200 to-sky-300 bg-clip-text text-transparent">Knowledge Graph & Search Results</span>
+          </h1>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Watch our two short narrated video presentations below to learn <strong>why structured Schema.org linked data is essential for musicians and bands</strong>, and <strong>how to use this tool</strong> to auto-populate, refine, and embed JSON-LD into your website in minutes.
+          </p>
+        </div>
+      </div>
+
+      <!-- Two Large Video Preview Cards Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        
+        <!-- Video Card 1: Why use SEO4musicians -->
+        <div class="video-preview-card glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between" @click="playVideo('why')">
+          <div class="space-y-4">
+            
+            <!-- Video Thumbnail / Preview Container with Large Play Button -->
+            <div class="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-700/70 group shadow-xl">
+              <!-- Video Poster Frame -->
+              <video preload="metadata" class="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-opacity">
+                <source src="./SEO4musicians-Why.mp4#t=1.5" type="video/mp4">
+              </video>
+
+              <!-- Gradient Vignette -->
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+
+              <!-- Badges on Preview Frame -->
+              <div class="absolute top-3 left-3 flex items-center gap-2">
+                <span class="badge badge-amber text-[10px] font-bold"><i class="fa-solid fa-play mr-1"></i> Video 1</span>
+                <span class="badge badge-indigo text-[10px]">Overview</span>
+              </div>
+              <div class="absolute top-3 right-3">
+                <span class="px-2 py-0.5 rounded bg-black/75 text-[10px] font-mono text-slate-300 border border-white/10">Full Screen</span>
+              </div>
+
+              <!-- Large Play Button Overlay -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <div class="play-btn-glow w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-amber-500/90 text-slate-950 flex items-center justify-center text-2xl sm:text-3xl shadow-2xl pl-1">
+                  <i class="fa-solid fa-play"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-200 tracking-wide bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm">Click to Play Full Screen</span>
+              </div>
+
+              <!-- Video Bottom Title on Frame -->
+              <div class="absolute bottom-3 left-3 right-3 text-left">
+                <div class="text-sm font-bold text-slate-100 truncate">Why use SEO4musicians?</div>
+              </div>
+            </div>
+
+            <!-- Card Body Content -->
+            <div>
+              <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                1. Why use SEO4musicians?
+              </h3>
+              <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                Understand the challenges musicians face with entity ambiguity, homonyms, and missing search panels, and how Schema.org linked data provides the solution.
+              </p>
+
+              <!-- Bullet Points List -->
+              <ul class="space-y-2 text-xs text-slate-300">
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Disambiguate Your Band:</strong> Prevent search engines from confusing your band with other artists with similar names.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Google Knowledge Graph Panels:</strong> Link your official website, Spotify, Apple Music, Bandcamp, and MusicBrainz MBID.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Accurate Venue Timezones:</strong> Ensure concert times are never distorted by timezone misunderstandings.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Direct Fan Revenue:</strong> Embed direct Bandcamp purchase links and venue ticket checkout buttons into structured data.</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Card Action Button -->
+          <div class="pt-5 mt-4 border-t border-slate-800">
+            <button class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2 !bg-amber-600 hover:!bg-amber-500">
+              <i class="fa-solid fa-circle-play text-sm"></i>
+              <span>Play "Why to use the tool" (Full Screen)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Card 2: How to use SEO4musicians -->
+        <div class="video-preview-card glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between" @click="playVideo('how')">
+          <div class="space-y-4">
+            
+            <!-- Video Thumbnail / Preview Container with Large Play Button -->
+            <div class="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-700/70 group shadow-xl">
+              <!-- Video Poster Frame -->
+              <video preload="metadata" class="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-opacity">
+                <source src="./SEO4musicians-How.mp4#t=1.5" type="video/mp4">
+              </video>
+
+              <!-- Gradient Vignette -->
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+
+              <!-- Badges on Preview Frame -->
+              <div class="absolute top-3 left-3 flex items-center gap-2">
+                <span class="badge badge-sky text-[10px] font-bold"><i class="fa-solid fa-play mr-1"></i> Video 2</span>
+                <span class="badge badge-emerald text-[10px]">Tutorial</span>
+              </div>
+              <div class="absolute top-3 right-3">
+                <span class="px-2 py-0.5 rounded bg-black/75 text-[10px] font-mono text-slate-300 border border-white/10">Full Screen</span>
+              </div>
+
+              <!-- Large Play Button Overlay -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <div class="play-btn-glow w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-sky-500/90 text-slate-950 flex items-center justify-center text-2xl sm:text-3xl shadow-2xl pl-1">
+                  <i class="fa-solid fa-play"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-200 tracking-wide bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm">Click to Play Full Screen</span>
+              </div>
+
+              <!-- Video Bottom Title on Frame -->
+              <div class="absolute bottom-3 left-3 right-3 text-left">
+                <div class="text-sm font-bold text-slate-100 truncate">How to use SEO4musicians?</div>
+              </div>
+            </div>
+
+            <!-- Card Body Content -->
+            <div>
+              <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-screwdriver-wrench text-sky-400"></i>
+                2. How to use SEO4musicians?
+              </h3>
+              <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                Step-by-step walkthrough demonstrating how to enter your website or Bandcamp URL, auto-crawl your profile, and embed the JSON-LD into your website.
+              </p>
+
+              <!-- Bullet Points List -->
+              <ul class="space-y-2 text-xs text-slate-300">
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Zero Dummy Defaults:</strong> Starts completely blank so you never waste time clearing spurious placeholders.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Foremost Auto-Discovery:</strong> Enter your website URL or Bandcamp profile and click scan to auto-populate your band's real data.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>Full Editing Flexibility:</strong> Freely adjust lineups, tracklist ISO durations, and upcoming tour dates.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-check text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                  <span><strong>1-Click CMS Embed:</strong> Copy the code and paste it into WordPress, Squarespace, Wix, Shopify, or Webflow.</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Card Action Button -->
+          <div class="pt-5 mt-4 border-t border-slate-800">
+            <button class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2 !bg-sky-600 hover:!bg-sky-500">
+              <i class="fa-solid fa-circle-play text-sm"></i>
+              <span>Play "How to use the tool" (Full Screen)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Summary & Return Card at Bottom -->
+      <div class="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-shield-halved text-amber-400 text-2xl flex-shrink-0"></i>
+          <div>
+            <div class="text-sm font-bold text-slate-100">Ready to build your Schema.org linked data?</div>
+            <p class="text-xs text-slate-400">SEO4musicians is 100% free, private, client-side, and never touches your website directly.</p>
+          </div>
+        </div>
+        <button @click="closeAboutView" class="btn-primary text-xs py-2.5 px-6 whitespace-nowrap flex items-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Back to the SEO4musicians tool</span>
+        </button>
+      </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- FULLSCREEN THEATER VIDEO PLAYER OVERLAY -->
+    <!-- ========================================================================= -->
+    <div v-if="activePlayingVideo" class="theater-overlay" @click.self="closeVideoPlayer">
+      
+      <!-- Video Header Bar with Title & Close Button -->
+      <div class="w-full max-w-5xl flex items-center justify-between pb-3 mb-2 text-slate-200">
+        <div class="flex items-center gap-2 truncate pr-4">
+          <i class="fa-solid fa-circle-play text-amber-400"></i>
+          <span class="font-bold text-sm sm:text-base text-slate-100 truncate">{{ activePlayingVideo.title }}</span>
+        </div>
+        
+        <!-- Top Right Close Button -->
+        <button @click="closeVideoPlayer" 
+                class="w-10 h-10 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white flex items-center justify-center transition-colors shadow-lg flex-shrink-0" 
+                title="Close Video (Esc)">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Video Player Frame -->
+      <div class="w-full max-w-5xl relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-700/80 aspect-video max-h-[80vh] flex items-center justify-center">
+        <video 
+          ref="theaterVideo" 
+          :key="activePlayingVideo.src"
+          controls 
+          autoplay 
+          playsinline 
+          class="w-full h-full max-h-[80vh] object-contain bg-black">
+          <source :src="activePlayingVideo.src" type="video/mp4">
+          Your browser does not support HTML5 MP4 video.
+        </video>
+      </div>
+
+      <!-- Bottom Hint & Return Button -->
+      <div class="w-full max-w-5xl flex items-center justify-between pt-3 text-xs text-slate-400">
+        <span class="hidden sm:inline">Press <kbd class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px] border border-slate-700">ESC</kbd> or click the close button to return to the About page.</span>
+        <button @click="closeVideoPlayer" class="btn-secondary text-xs py-1 px-3 ml-auto text-slate-300 hover:text-white">
+          <i class="fa-solid fa-xmark mr-1"></i> Close Video
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-800/80 bg-slate-950/80 py-4 px-6 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="font-bold text-slate-300">SEO4musicians</span> — Free Self-Service Tool hosted at <a href="https://mh1.eu/tools/SEO4musicians" class="text-amber-400 hover:underline">mh1.eu/tools/SEO4musicians</a>.
+        </div>
+        <div class="flex items-center gap-4 text-slate-400">
+          <button @click="activeModal = 'disclaimer'" class="hover:text-amber-400 underline">Terms & Disclaimer</button>
+          <a href="https://schema.org/MusicGroup" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400">schema:MusicGroup</a>
+          <a href="https://musicbrainz.org" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400">MusicBrainz</a>
+          <a href="https://www.wikidata.org" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400">Wikidata</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 0: GETTING STARTED NARRATED GUIDE & VIDEO PRESENTATION -->
+    <!-- ========================================================================= -->
+    <div v-if="activeModal === 'gettingStarted'" class="modal-backdrop" @click.self="activeModal = null">
+      <div class="modal-card p-6 max-w-3xl">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-circle-play text-emerald-400"></i> Getting Started: Narrated Video & User Guide
+          </h3>
+          <button @click="activeModal = null" class="btn-icon text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs text-slate-300 leading-relaxed max-h-[75vh] overflow-y-auto pr-1">
+          
+          <!-- Video Banner & Callout -->
+          <div class="p-4 rounded-xl bg-gradient-to-r from-emerald-950/50 via-slate-900 to-indigo-950/50 border border-emerald-500/30 flex flex-col sm:flex-row items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0">
+              <i class="fa-solid fa-film"></i>
+            </div>
+            <div class="flex-1 text-center sm:text-left">
+              <h4 class="font-bold text-slate-100 text-sm mb-1">Interactive Video Presentation & NotebookLM Resources</h4>
+              <p class="text-slate-400 text-xs">
+                Learn how SEO4musicians empowers independent artists to trigger Google Knowledge Panels, search event carousels, and direct Bandcamp sales in under 5 minutes.
+              </p>
+            </div>
+            <button @click="activeModal = null; loadDemoExample()" class="btn-primary text-xs py-2 px-3.5 whitespace-nowrap !bg-emerald-600 hover:!bg-emerald-500">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Try Demo Dataset
+            </button>
+          </div>
+
+          <!-- Step 1 to 4 Highlights -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            
+            <div class="glass-card p-3 border-l-4 border-l-amber-500">
+              <h5 class="font-bold text-slate-200 text-xs flex items-center gap-1.5 mb-1">
+                <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-mono text-[11px]">1</span>
+                Why SEO for Musicians?
+              </h5>
+              <p class="text-slate-400 text-[11px]">
+                Search engines require machine-readable <strong>JSON-LD linked data</strong> to disambiguate artist identities, link streaming profiles (<code class="font-mono text-amber-300">sameAs</code>), and feed Google Knowledge Panels and AI engines (ChatGPT, Gemini, Perplexity).
+              </p>
+            </div>
+
+            <div class="glass-card p-3 border-l-4 border-l-indigo-500">
+              <h5 class="font-bold text-slate-200 text-xs flex items-center gap-1.5 mb-1">
+                <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-mono text-[11px]">2</span>
+                Automated Discovery
+              </h5>
+              <p class="text-slate-400 text-[11px]">
+                Enter your website URL or Bandcamp profile at the top. The tool crawls your site, cross-references MusicBrainz MBIDs, and pulls tour dates from Bandsintown and Songkick—with zero fake demo values.
+              </p>
+            </div>
+
+            <div class="glass-card p-3 border-l-4 border-l-sky-500">
+              <h5 class="font-bold text-slate-200 text-xs flex items-center gap-1.5 mb-1">
+                <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-300 flex items-center justify-center font-mono text-[11px]">3</span>
+                Direct Bandcamp & Ticket Links
+              </h5>
+              <p class="text-slate-400 text-[11px]">
+                Embed direct checkout <code class="font-mono text-sky-300">schema:Offer</code> links for Bandcamp albums and tracks (Bandcamp Fridays), and extract direct venue box office ticket purchase links for upcoming tour dates.
+              </p>
+            </div>
+
+            <div class="glass-card p-3 border-l-4 border-l-emerald-500">
+              <h5 class="font-bold text-slate-200 text-xs flex items-center gap-1.5 mb-1">
+                <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-mono text-[11px]">4</span>
+                Export & 1-Click CMS Embed
+              </h5>
+              <p class="text-slate-400 text-[11px]">
+                Export pristine JSON-LD script, validate in 1 click with Google Rich Results Test, and paste into WordPress, Squarespace, Wix, Shopify, or Webflow.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Free & Non-Destructive Notice -->
+          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400">
+            <i class="fa-solid fa-shield-halved text-amber-400 mr-1"></i>
+            <strong>100% Client-Side Privacy:</strong> SEO4musicians is free on an "as is" basis. It runs exclusively in your browser and never alters anything on your website or online profiles directly.
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <button @click="activeModal = 'embed'" class="btn-secondary text-xs py-2 px-3">
+              <i class="fa-solid fa-code text-sky-400"></i> View CMS Embed Guide
+            </button>
+            <button @click="activeModal = null" class="btn-primary text-xs py-2 px-4">
+              Get Started Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 1: DISCLAIMER, "AS IS" TERMS & NON-DESTRUCTIVE NOTICE -->
+    <!-- ========================================================================= -->
+    <div v-if="activeModal === 'disclaimer'" class="modal-backdrop" @click.self="activeModal = null">
+      <div class="modal-card p-6 max-w-2xl">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-amber-400"></i> Free Service Terms, Non-Destructive Notice & Disclaimer
+          </h3>
+          <button @click="activeModal = null" class="btn-icon text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+          <div class="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200">
+            <strong class="block text-sm font-bold text-amber-400 mb-1">Important: Non-Destructive Client-Side Tool</strong>
+            SEO4musicians runs entirely inside your browser. It <strong>never directly modifies, edits, or alters anything on your website, your web server, CMS, or external profiles</strong> (Spotify, Bandcamp, MusicBrainz, etc.). It solely generates standard JSON-LD Schema.org code that you can review and paste into your site.
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-100 text-sm mb-1">"As Is" Service Agreement</h4>
+            <p>
+              This tool is provided as a <strong>free, self-service utility on an entirely "as is" basis</strong>, without warranty of any kind, either express or implied, including but not limited to fitness for a particular purpose, merchantability, search engine ranking outcomes, or non-infringement.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-100 text-sm mb-1">Limitation of Liability</h4>
+            <p>
+              Under no circumstances shall the author or host (<a href="https://mh1.eu" class="text-amber-400 underline">mh1.eu</a>) be held liable for any claims, damages, ranking changes, or other liabilities arising from the use of this tool or the code it generates. Users retain full responsibility for reviewing, validating, and testing generated schema code before placing it onto their production websites.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-100 text-sm mb-1">Privacy & Client-Side Execution</h4>
+            <p>
+              Your entered information is not stored in any external database. All computations, JSON-LD generation, file downloads, and clipboard operations occur locally inside your web browser.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-end pt-3 border-t border-slate-800">
+            <button @click="activeModal = null" class="btn-primary text-xs py-2 px-4">I Understand</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 2: JSON-LD IMPORT & INGESTION -->
+    <!-- ========================================================================= -->
+    <div v-if="activeModal === 'import'" class="modal-backdrop" @click.self="activeModal = null">
+      <div class="modal-card p-6">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-file-import text-indigo-400"></i> Import JSON-LD Schema
+          </h3>
+          <button @click="activeModal = null" class="btn-icon text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <!-- File Upload Option -->
+          <div class="p-5 border-2 border-dashed border-slate-700 hover:border-amber-400/60 rounded-xl text-center cursor-pointer transition bg-slate-900/50">
+            <input type="file" accept=".jsonld,.json" @change="handleFileUpload" class="hidden" id="fileUploadInput">
+            <label for="fileUploadInput" class="cursor-pointer block">
+              <i class="fa-solid fa-cloud-arrow-up text-2xl text-amber-400 mb-2"></i>
+              <div class="text-sm font-semibold text-slate-200">Click to upload .jsonld or .json file</div>
+              <div class="text-xs text-slate-400 mt-1">Loads previous schema payloads directly into the interactive form.</div>
+            </label>
+          </div>
+
+          <div class="text-center text-xs text-slate-500 font-bold uppercase">— OR PASTE RAW JSON-LD —</div>
+
+          <!-- Raw Text Paste Option -->
+          <div>
+            <textarea 
+              v-model="rawJsonImportInput" 
+              rows="6" 
+              class="form-textarea font-mono text-xs" 
+              placeholder='Paste raw JSON-LD markup or <script type="application/ld+json"> snippet here...'></textarea>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <button @click="activeModal = null" class="btn-secondary text-xs py-2 px-4">Cancel</button>
+            <button @click="handlePasteImport" :disabled="!rawJsonImportInput.trim()" class="btn-primary text-xs py-2 px-4">
+              Parse & Apply to State
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 3: BULK TRACKLIST IMPORTER -->
+    <!-- ========================================================================= -->
+    <div v-if="activeModal === 'bulkTracks'" class="modal-backdrop" @click.self="activeModal = null">
+      <div class="modal-card p-6">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-list-ol text-amber-400"></i> Bulk Tracklist Importer
+          </h3>
+          <button @click="activeModal = null" class="btn-icon text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <p class="text-xs text-slate-400">
+            Paste your tracklist below. The parser automatically detects track numbers, titles, and MM:SS durations:
+          </p>
+
+          <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800 text-[11px] text-slate-400 font-mono">
+            Example formats supported:<br>
+            1. Track Title 04:12<br>
+            02 - Song Name (03:48)<br>
+            Acoustic Interlude [2:15]
+          </div>
+
+          <textarea 
+            v-model="bulkTracksInput" 
+            rows="8" 
+            class="form-textarea font-mono text-xs" 
+            placeholder="1. Track One 03:30&#10;2. Track Two 04:15&#10;3. Track Three 02:45..."></textarea>
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <button @click="activeModal = null" class="btn-secondary text-xs py-2 px-4">Cancel</button>
+            <button @click="applyBulkTracks" :disabled="!bulkTracksInput.trim()" class="btn-primary text-xs py-2 px-4">
+              Import Tracklist
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 4: CMS EMBED GUIDANCE -->
+    <!-- ========================================================================= -->
+    <div v-if="activeModal === 'embed'" class="modal-backdrop" @click.self="activeModal = null">
+      <div class="modal-card p-6 max-w-3xl">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-code text-sky-400"></i> CMS Integration & Placement Guide
+          </h3>
+          <button @click="activeModal = null" class="btn-icon text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <!-- CMS Platform Selector -->
+          <div class="flex flex-wrap items-center gap-1.5 p-1 bg-slate-900 rounded-lg border border-slate-800">
+            <button 
+              v-for="cms in ['wordpress', 'squarespace', 'webflow', 'wix', 'shopify', 'html']" 
+              :key="cms"
+              @click="embedCmsTab = cms"
+              :class="['text-xs font-semibold px-3 py-1.5 rounded uppercase tracking-wider transition', embedCmsTab === cms ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-slate-200']">
+              {{ cms }}
+            </button>
+          </div>
+
+          <!-- WordPress Guide -->
+          <div v-if="embedCmsTab === 'wordpress'" class="space-y-3 text-xs text-slate-300">
+            <h4 class="font-bold text-amber-300 text-sm">WordPress Integration</h4>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+              <li><strong>Recommended:</strong> Install a header script plugin such as <em>WPCode / Insert Headers and Footers</em> or <em>Code Snippets</em>.</li>
+              <li>Navigate to <strong>Code Snippets &rarr; Header & Footer</strong>.</li>
+              <li>Paste the generated <code class="font-mono text-amber-400">&lt;script type="application/ld+json"&gt;</code> payload directly into the <strong>Header</strong> box.</li>
+              <li>Alternatively, if using <em>RankMath SEO</em> or <em>Yoast</em>, navigate to the Schema tab and paste into Custom Schema.</li>
+            </ol>
+          </div>
+
+          <!-- Squarespace Guide -->
+          <div v-if="embedCmsTab === 'squarespace'" class="space-y-3 text-xs text-slate-300">
+            <h4 class="font-bold text-amber-300 text-sm">Squarespace Integration</h4>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+              <li>From your Squarespace dashboard, go to <strong>Settings &rarr; Advanced &rarr; Code Injection</strong>.</li>
+              <li>Paste the code into the <strong>Header</strong> textarea.</li>
+              <li>For per-page schema (e.g. specific album or event pages in Multi-Page mode), click the gear icon on the specific page &rarr; <strong>Advanced &rarr; Page Header Code Injection</strong>.</li>
+            </ol>
+          </div>
+
+          <!-- Webflow Guide -->
+          <div v-if="embedCmsTab === 'webflow'" class="space-y-3 text-xs text-slate-300">
+            <h4 class="font-bold text-amber-300 text-sm">Webflow Integration</h4>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+              <li>Open your project in the Webflow Designer.</li>
+              <li>Navigate to <strong>Project Settings &rarr; Custom Code</strong> (for site-wide schema) or <strong>Page Settings &rarr; Custom Code</strong> (for per-page schema).</li>
+              <li>Paste the code snippet inside the <strong>Inside &lt;head&gt; tag</strong> block and publish the site.</li>
+            </ol>
+          </div>
+
+          <!-- Wix Guide -->
+          <div v-if="embedCmsTab === 'wix'" class="space-y-3 text-xs text-slate-300">
+            <h4 class="font-bold text-amber-300 text-sm">Wix Integration</h4>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+              <li>In your Wix dashboard, go to <strong>Settings &rarr; Custom Code</strong> under Advanced.</li>
+              <li>Click <strong>+ Add Custom Code</strong>.</li>
+              <li>Paste the code snippet, choose <strong>Head</strong> for code placement, and set <strong>Apply to: All Pages</strong> (or Specific Pages).</li>
+            </ol>
+          </div>
+
+          <!-- Shopify Guide -->
+          <div v-if="embedCmsTab === 'shopify'" class="space-y-3 text-xs text-slate-300">
+            <h4 class="font-bold text-amber-300 text-sm">Shopify / Merch Store Integration</h4>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+              <li>In Shopify Admin, go to <strong>Online Store &rarr; Themes &rarr; Edit Code</strong>.</li>
+              <li>Open <code class="font-mono text-amber-300">layout/theme.liquid</code>.</li>
+              <li>Paste the code snippet just before the closing <code class="font-mono text-amber-300">&lt;/head&gt;</code> tag.</li>
+            </ol>
+          </div>
+
+          <!-- Static HTML Guide -->
+          <div v-if="embedCmsTab === 'html'" class="space-y-3 text-xs text-slate-300">
+            <h4 class="font-bold text-amber-300 text-sm">Static HTML / Apache / Nginx</h4>
+            <p>Paste the snippet directly between the <code class="font-mono text-amber-400">&lt;head&gt;...&lt;/head&gt;</code> tags or right before <code class="font-mono text-amber-400">&lt;/body&gt;</code> on your static HTML template.</p>
+          </div>
+
+          <div class="flex items-center justify-end pt-3 border-t border-slate-800">
+            <button @click="activeModal = null" class="btn-primary text-xs py-2 px-4">Got It</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 5: RESET CONFIRMATION -->
+    <!-- ========================================================================= -->
+    <div v-if="activeModal === 'resetConfirm'" class="modal-backdrop" @click.self="activeModal = null">
+      <div class="modal-card p-6 max-w-md">
+        <div class="text-center space-y-3">
+          <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3 class="text-base font-bold text-slate-100">Clear All Form Fields?</h3>
+          <p class="text-xs text-slate-400">
+            This will reset all band details, albums, tracks, and links to an empty state.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 pt-5 mt-4 border-t border-slate-800">
+          <button @click="activeModal = null" class="btn-secondary text-xs py-2 px-4">Cancel</button>
+          <button @click="resetForm" class="btn-primary !bg-rose-600 hover:!bg-rose-500 !text-white text-xs py-2 px-4">
+            Yes, Clear Form
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container">
+      <div 
+        v-for="toast in toasts" 
+        :key="toast.id" 
+        :class="['toast', toast.type === 'success' ? 'toast-success' : (toast.type === 'warning' ? 'toast-warning' : 'toast-info')]">
+        <i v-if="toast.type === 'success'" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <i v-else-if="toast.type === 'warning'" class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+        <i v-else class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span>{{ toast.message }}</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Vue Application Initialization -->
+  <script src="app.js"></script>
+</body>
+</html>
