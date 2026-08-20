@@ -1602,16 +1602,22 @@
           </div>
         </div>
 
-        <button @click="closeAboutView" class="btn-primary text-xs py-2 px-4 flex items-center gap-2 !bg-amber-600 hover:!bg-amber-500 shadow-lg">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Back to the SEO4musicians tool</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <a href="https://github.com/mgh128/SEO4musicians/" target="_blank" rel="noopener noreferrer" class="btn-secondary text-xs py-2 px-3.5 flex items-center gap-1.5 text-slate-200 hover:text-white border border-slate-700 bg-slate-800/80">
+            <i class="fa-brands fa-github text-sm"></i>
+            <span>GitHub Repository</span>
+          </a>
+          <button @click="closeAboutView" class="btn-primary text-xs py-2 px-4 flex items-center gap-2 !bg-amber-600 hover:!bg-amber-500 shadow-lg">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to the SEO4musicians tool</span>
+          </button>
+        </div>
       </div>
 
       <!-- Hero Introduction Banner -->
       <div class="glass-panel p-6 sm:p-8 border-2 border-sky-500/30 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 rounded-2xl relative overflow-hidden">
         <div class="max-w-3xl space-y-3 relative z-10">
-          <span class="badge badge-amber text-xs font-mono uppercase tracking-wider">Video Walkthroughs</span>
+          <span class="badge badge-amber text-xs font-mono uppercase tracking-wider">Video Walkthroughs & Open Source</span>
           <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight leading-tight">
             Take Control of Your Music's <span class="bg-gradient-to-r from-amber-400 via-amber-200 to-sky-300 bg-clip-text text-transparent">Knowledge Graph & Search Results</span>
           </h1>
@@ -1789,14 +1795,20 @@
         <div class="flex items-center gap-3">
           <i class="fa-solid fa-shield-halved text-amber-400 text-2xl flex-shrink-0"></i>
           <div>
-            <div class="text-sm font-bold text-slate-100">Ready to build your Schema.org linked data?</div>
-            <p class="text-xs text-slate-400">SEO4musicians is 100% free, private, client-side, and never touches your website directly.</p>
+            <div class="text-sm font-bold text-slate-100">Open Source & Free Self-Service Tool</div>
+            <p class="text-xs text-slate-400">SEO4musicians is licensed under the Apache 2.0 License. It runs 100% in your browser and never touches your website directly.</p>
           </div>
         </div>
-        <button @click="closeAboutView" class="btn-primary text-xs py-2.5 px-6 whitespace-nowrap flex items-center gap-2">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Back to the SEO4musicians tool</span>
-        </button>
+        <div class="flex items-center flex-wrap gap-2.5">
+          <a href="https://github.com/mgh128/SEO4musicians/" target="_blank" rel="noopener noreferrer" class="btn-secondary text-xs py-2.5 px-4 flex items-center gap-2 text-slate-200 hover:text-white border border-slate-700 bg-slate-800/80">
+            <i class="fa-brands fa-github text-sm"></i>
+            <span>GitHub Repository</span>
+          </a>
+          <button @click="closeAboutView" class="btn-primary text-xs py-2.5 px-5 whitespace-nowrap flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Tool</span>
+          </button>
+        </div>
       </div>
 
     </main>
@@ -1852,6 +1864,9 @@
           <span class="font-bold text-slate-300">SEO4musicians</span> — Free Self-Service Tool hosted at <a href="https://mh1.eu/tools/SEO4musicians" class="text-amber-400 hover:underline">mh1.eu/tools/SEO4musicians</a>.
         </div>
         <div class="flex items-center gap-4 text-slate-400">
+          <a href="https://github.com/mgh128/SEO4musicians/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-200 flex items-center gap-1 font-semibold">
+            <i class="fa-brands fa-github text-sm"></i> GitHub
+          </a>
           <button @click="activeModal = 'disclaimer'" class="hover:text-amber-400 underline">Terms & Disclaimer</button>
           <a href="https://schema.org/MusicGroup" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400">schema:MusicGroup</a>
           <a href="https://musicbrainz.org" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400">MusicBrainz</a>
